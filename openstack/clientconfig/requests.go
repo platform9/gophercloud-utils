@@ -32,6 +32,9 @@ const (
 	// AuthV2Token defines version 2 of the token
 	AuthV2Token AuthType = "v2token"
 
+	// AuthV2APIKey defines a rackspace API key
+	AuthV2CustomCredential AuthType = "customCredential"
+
 	// AuthV3Password defines version 3 of the password
 	AuthV3Password AuthType = "v3password"
 	// AuthV3Token defines version 3 of the token
@@ -436,6 +439,8 @@ func determineIdentityAPI(cloud *Cloud, opts *ClientOpts) string {
 			identityAPI = "2.0"
 		case AuthV2Token:
 			identityAPI = "2.0"
+		case AuthV2CustomCredential:
+			identityAPI = "2.0"
 		case AuthV3Password:
 			identityAPI = "3"
 		case AuthV3Token:
@@ -510,6 +515,12 @@ func v2auth(cloud *Cloud, opts *ClientOpts) (*gophercloud.AuthOptions, error) {
 		}
 	}
 
+	if cloud.AuthInfo.CustomCredential == "" {
+		if v := env.Getenv(envPrefix + "CUSTOM_CREDENTIAL"); v != "" {
+			cloud.AuthInfo.CustomCredential = v
+		}
+	}
+
 	ao := &gophercloud.AuthOptions{
 		IdentityEndpoint: cloud.AuthInfo.AuthURL,
 		TokenID:          cloud.AuthInfo.Token,
@@ -518,6 +529,7 @@ func v2auth(cloud *Cloud, opts *ClientOpts) (*gophercloud.AuthOptions, error) {
 		TenantID:         cloud.AuthInfo.ProjectID,
 		TenantName:       cloud.AuthInfo.ProjectName,
 		AllowReauth:      cloud.AuthInfo.AllowReauth,
+		CustomCredential: cloud.AuthInfo.CustomCredential,
 	}
 
 	return ao, nil
