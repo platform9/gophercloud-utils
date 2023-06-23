@@ -32,6 +32,9 @@ const (
 	// AuthV2Token defines version 2 of the token
 	AuthV2Token AuthType = "v2token"
 
+	// AuthV2APIKey defines a rackspace API key
+	AuthV2APIKey AuthType = "rackspace_apikey"
+
 	// AuthV3Password defines version 3 of the password
 	AuthV3Password AuthType = "v3password"
 	// AuthV3Token defines version 3 of the token
@@ -395,8 +398,10 @@ func AuthOptions(opts *ClientOpts) (*gophercloud.AuthOptions, error) {
 	identityAPI := determineIdentityAPI(cloud, opts)
 	switch identityAPI {
 	case "2.0", "2":
+		fmt.Printf("using v2\n")
 		return v2auth(cloud, opts)
 	case "3":
+		fmt.Printf("using v3\n")
 		return v3auth(cloud, opts)
 	}
 
@@ -404,6 +409,8 @@ func AuthOptions(opts *ClientOpts) (*gophercloud.AuthOptions, error) {
 }
 
 func determineIdentityAPI(cloud *Cloud, opts *ClientOpts) string {
+	fmt.Printf("Cloud = %+v\n", *cloud)
+	fmt.Printf("authInfo = %+v\n", *cloud.AuthInfo)
 	var identityAPI string
 	if cloud.IdentityAPIVersion != "" {
 		identityAPI = cloud.IdentityAPIVersion
@@ -510,6 +517,12 @@ func v2auth(cloud *Cloud, opts *ClientOpts) (*gophercloud.AuthOptions, error) {
 		}
 	}
 
+	if cloud.AuthInfo.APIKey == "" {
+		if v := env.Getenv(envPrefix + "API_KEY"); v != "" {
+			cloud.AuthInfo.APIKey = v
+		}
+	}
+
 	ao := &gophercloud.AuthOptions{
 		IdentityEndpoint: cloud.AuthInfo.AuthURL,
 		TokenID:          cloud.AuthInfo.Token,
@@ -518,6 +531,7 @@ func v2auth(cloud *Cloud, opts *ClientOpts) (*gophercloud.AuthOptions, error) {
 		TenantID:         cloud.AuthInfo.ProjectID,
 		TenantName:       cloud.AuthInfo.ProjectName,
 		AllowReauth:      cloud.AuthInfo.AllowReauth,
+		APIKey:           cloud.AuthInfo.APIKey,
 	}
 
 	return ao, nil
@@ -727,11 +741,12 @@ func v3auth(cloud *Cloud, opts *ClientOpts) (*gophercloud.AuthOptions, error) {
 // AuthenticatedClient is a convenience function to get a new provider client
 // based on a clouds.yaml entry.
 func AuthenticatedClient(opts *ClientOpts) (*gophercloud.ProviderClient, error) {
+	fmt.Printf("p00pp00p\n")
 	ao, err := AuthOptions(opts)
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Printf("ao = %+v\n", *ao)
 	return openstack.AuthenticatedClient(*ao)
 }
 

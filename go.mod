@@ -1,5 +1,7 @@
 module github.com/gophercloud/utils
 
+replace github.com/gophercloud/gophercloud => /home/xagent/gophercloud
+
 require (
 	github.com/gophercloud/gophercloud v1.3.0
 	github.com/hashicorp/go-uuid v1.0.3

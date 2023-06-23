@@ -136,6 +136,9 @@ type AuthInfo struct {
 	// false, it will not cache these settings, but re-authentication will not be
 	// possible.  This setting defaults to false.
 	AllowReauth bool `yaml:"allow_reauth,omitempty" json:"allow_reauth,omitempty"`
+
+	// APIKey defines an API Key based auth as opposed to password which does not work with 2FA
+	APIKey string `yaml:"api_key,omitempty" json:"api_key,omitempty"`
 }
 
 // Region represents a region included as part of cloud in clouds.yaml
